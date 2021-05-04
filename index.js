@@ -12,6 +12,9 @@ var product_controller = require('./controllers/product_controller');
 
 
 app.use(cors());
+app.get('/',(req,res)=>{
+    res.send("fine")
+})
 
 
 //app.use('/', employeeController);
