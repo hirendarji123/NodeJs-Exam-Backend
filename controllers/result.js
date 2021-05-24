@@ -2,13 +2,13 @@ const express = require('express');
 var router = express.Router();
 var ObjectId = require('mongoose').Types.ObjectId;
 
-var { product_details } = require('../models/product_details');
+var { Result } = require('../models/result');
 
 
 // => localhost:3000/users
 // ----------------------get all data-----------------------
 router.get('/', (req, res) => {
-    product_details.find((err, docs) => {
+    Result.find((err, docs) => {
         if (!err) { res.send(docs); }
          else 
          { console.log('Error in Retriving Users :' + JSON.stringify(err, undefined, 2)); }
@@ -18,7 +18,7 @@ router.get('/', (req, res) => {
 router.get('/:username', (req, res) => {
     //console.log("req.param.username: ",req.params.username);
     var username =req.params.username;
-    product_details.find({}, function(err, result) 
+    Result.find({username :username}, function(err, result) 
     {   
         //console.log("get data of user"+result);
         
@@ -32,7 +32,7 @@ router.get('/:username', (req, res) => {
             //res.setHeader('Content-Type', 'text/plain');
             res.send([]);
         }
-    }).sort({date:1});
+    }).sort();
 
 });
 
@@ -41,38 +41,52 @@ router.get('/:username', (req, res) => {
 // -------------------------insert data -------------------
 
 router.post('/', (req, res) => {
-    console.log("in post user backend: ",req.body);
+    console.log("in post user result backend : ",req.body);
 
-    var emp=new product_details(req.body);
-   // User.create(req.body);
-    //var emp = new User({
-
-        //name: req.body.name,
-        //email: req.body.email,
-        //username: req.body.username,
-     ///   password: req.body.password,
-   //     confirm_password: req.body.confirm_password
- //   });
+    var emp=new Result(req.body);
     emp.save((err, doc) => {
-        if (!err) { res.send(doc); } else { console.log('Error in User Save :' + JSON.stringify(err, undefined, 2)); }
+        if (!err) { res.send(doc); }
+         else {
+              console.log('Error in User Save :' + JSON.stringify(err.message, undefined, 2)); 
+              res.send(JSON.stringify(err.message));
+         }
     });
 });
 
 
 // -------------------------    update data-----------------------------
 
-router.put('/:id', (req, res) => {
+router.put('/:id',async (req, res) => {
+ let passwords;
+ let confirm_passwords;
+    await User.findById(req.params.id, function (err, docs) {
+        if (err){
+            console.log(err);
+        }
+        else{
+            console.log(" find Result : ", docs);
+            passwords=docs.password;
+            confirm_passwords=docs.confirm_password;
+           
+            
+        }
+    });
+
+
+
+
     if (!ObjectId.isValid(req.params.id))
         return res.status(400).send(`No record with given id : ${req.params.id}`);
 
     var emp = {
         
-        name: req.body.name,
+
         email: req.body.email,
         username: req.body.username,
-        password: req.body.password,
-        confirm_password: req.body.confirm_password
+        password: passwords,
+        confirm_password: confirm_passwords,
     };
+    console.log("emp",emp)
     User.findByIdAndUpdate(req.params.id, { $set: emp }, { new: true }, (err, doc) => {
         if (!err) { res.send(doc); } else { console.log('Error in User Update :' + JSON.stringify(err, undefined, 2)); }
     });

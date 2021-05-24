@@ -2,22 +2,28 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 var app = express();
+const path = require('path');
 app.use(bodyParser.json());
 
 const { mongoose } = require('./db.js');
 
-//var employeeController = require('./controllers/employeeController');
-var product_controller = require('./controllers/product_controller');
+var userController = require('./controllers/users');
+var questionController = require('./controllers/question');
+var resultController = require('./controllers/result');
 
 
 
-app.use(cors());
-app.get('/',(req,res)=>{
-    res.send("fine")
-})
+app.use(cors( ));
 
 
-//app.use('/', employeeController);
-app.use('/product_details' ,product_controller);
-//app.use('/usersofdevice',usersofdevice)
+
+app.use('/user' ,userController);
+app.use('/question',questionController);
+app.use('/result',resultController);
+
+if(process.env.NODE_ENV === 'production')
+{
+    app.use(express.static('build'))
+}
+
 app.listen(process.env.PORT || 4000, () => console.log('Server started at port : 4000'));
